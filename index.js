@@ -49,6 +49,8 @@ client.on("message", async function(message) {
   }
 
   else{
+    d = new Date();
+    console.log(d.toTimeString);
     embedMessage(message, command);
   }
 });
