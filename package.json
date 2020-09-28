@@ -11,6 +11,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "12.x",
+    "npm": "*"
+  },
   "dependencies": {
     "agenda": "^3.1.0",
     "discord.js": "^12.3.1",
