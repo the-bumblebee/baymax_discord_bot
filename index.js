@@ -37,8 +37,8 @@ client.on("message", async function(message) {
     // let j = schedule.scheduleJob('* * * * * *', function(){
     //   reminder('The world is going to end today.', null, message);
     // });
-    let job = schedule.scheduleJob('30 6 * * 1-5', function(){
-      console.log('Time Table set.');
+    console.log('Time Table set.');
+    let job = schedule.scheduleJob('0 1 * * 1-5', function(){
       getTimeTable((day, data) => {
         client.channels.cache.get('741443367111753820')
           .send(new Discord.MessageEmbed()
