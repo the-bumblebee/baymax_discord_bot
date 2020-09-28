@@ -38,6 +38,7 @@ client.on("message", async function(message) {
     //   reminder('The world is going to end today.', null, message);
     // });
     let job = schedule.scheduleJob('30 6 * * 1-5', function(){
+      console.log('Time Table set.');
       getTimeTable((day, data) => {
         client.channels.cache.get('741443367111753820')
           .send(new Discord.MessageEmbed()
@@ -50,7 +51,7 @@ client.on("message", async function(message) {
 
   else{
     d = new Date();
-    console.log(d.toTimeString);
+    console.log(d.toTimeString());
     embedMessage(message, command);
   }
 });
