@@ -1,12 +1,12 @@
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
-const config = require('./config.json');
 const { getTimeTable, embedMessage } = require('./sevices/misc');
 const fs = require('fs');
+require('dotenv').config();
 
 const client = new Discord.Client();
 
-const prefix = config.prefix;
+const prefix = process.env.PREFIX;
 
 function reminder (title, text, message) {
   message.channel.send(new Discord.MessageEmbed()
@@ -53,4 +53,4 @@ client.on("message", async function(message) {
   }
 });
 
-client.login(config.BOT_TOKEN);
+client.login(process.env.BOT_TOKEN);
