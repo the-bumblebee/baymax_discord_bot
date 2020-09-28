@@ -1,0 +1,5 @@
+{
+    "BOT_TOKEN": "NzU3NDQ1OTQwNzg4MzMwNjE3.X2gggA.FIP6H2omLa-ATXh3V5yzwUfd2AQ",
+    "prefix": ";",
+    "DB": "mongodb://localhost:27017/Discord"
+}
