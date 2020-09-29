@@ -17,6 +17,16 @@ function reminder (title, text, message) {
 
 client.once("ready", () => {
     console.log('Ready for some action.');
+	console.log('Time Table set.');
+    let job = schedule.scheduleJob('30 6 * * 1-5', function(){
+      getTimeTable((day, data) => {
+        client.channels.cache.get('741443367111753820')
+          .send(new Discord.MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle(day)
+            .setDescription(data)
+        )});
+    });
 });
 
 client.on("message", async function(message) {
@@ -33,20 +43,12 @@ client.on("message", async function(message) {
     });
   }
 
-  else if (command == 'test') {
+  else if (command == 'ping') {
     // let j = schedule.scheduleJob('* * * * * *', function(){
     //   reminder('The world is going to end today.', null, message);
     // });
-    console.log('Time Table set.');
-    let job = schedule.scheduleJob('40 11 * * 1-5', function(){
-      getTimeTable((day, data) => {
-        client.channels.cache.get('741443367111753820')
-          .send(new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle(day)
-            .setDescription(data)
-        )});
-    });
+	let timeTaken = Date.now() - message.createdTimestamp
+    message.channel.send(`Pong. Latency: ${timeTaken}ms`);
   }
 
   else{
