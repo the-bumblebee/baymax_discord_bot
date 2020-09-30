@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
-const { getTimeTable, embedMessage, validateReminder, setReminder } = require('./sevices/misc');
+const { embedMessage } = require('./sevices/misc');
 const getTimeTable = require('./sevices/getTimeTable');
 const Reminder = require('./sevices/Reminder');
 const fs = require('fs');
