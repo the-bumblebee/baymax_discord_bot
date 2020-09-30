@@ -11,8 +11,5 @@ function embedMessage (channel, title, text) {
 }
 
 module.exports = {
-    getTimeTable,
-    embedMessage,
-    validateReminder,
-    setReminder
+    embedMessage
 };

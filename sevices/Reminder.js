@@ -1,8 +1,8 @@
 const timeParser = require('./timeParser');
+const Discord = require('discord.js');
 const schedule = require('node-schedule');
 
 function validate(args, callback) {
-    console.log(args);
     if (args.length < 6 || args[0] !== 'at' || args[3] !== 'on') {
         callback(null, 'Incorrect format');
         return;
@@ -38,9 +38,7 @@ function set(client, data) {
             .setDescription(data.remindMessage);
         client.channels.cache.get(data.on).send(embedMessage);
         schedule.scheduledJobs[jobID].cancel();
-        console.log(data.remindMessage);
     });
-    console.log('Reminder set');
 }
 
 module.exports = { validate, set };
