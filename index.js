@@ -47,6 +47,11 @@ client.on("message", async function(message) {
       Reminder.set(client, data);
     });
   }
+  
+  else if (command === "ping") {
+    const timeTaken = Date.now() - message.createdTimestamp;
+    message.channel.send(`Pong. Latency: ${timeTaken}ms`);
+  }
 
   // else if (command == 'check') {
   //   let d = new Date();
