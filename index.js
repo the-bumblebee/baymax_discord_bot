@@ -1,6 +1,8 @@
 const Discord = require('discord.js');
 const schedule = require('node-schedule');
-const { getTimeTable, embedMessage } = require('./sevices/misc');
+const { getTimeTable, embedMessage, validateReminder, setReminder } = require('./sevices/misc');
+const getTimeTable = require('./sevices/getTimeTable');
+const Reminder = require('./sevices/Reminder');
 const fs = require('fs');
 require('dotenv').config();
 
@@ -8,17 +10,10 @@ const client = new Discord.Client();
 
 const prefix = process.env.PREFIX;
 
-function reminder (title, text, message) {
-  message.channel.send(new Discord.MessageEmbed()
-  .setColor('#0099ff')
-  .setTitle(title)
-  .setDescription(text));
-}
-
 client.once("ready", () => {
     console.log('Ready for some action.');
-	console.log('Time Table set.');
-    let job = schedule.scheduleJob('30 6 * * 1-5', function(){
+    console.log('Scheduling to send the time table at 6.30 AM everyday.');
+    let job = schedule.scheduleJob('timetable', '30 6 * * 1-5', function() {
       getTimeTable((day, data) => {
         client.channels.cache.get('741443367111753820')
           .send(new Discord.MessageEmbed()
@@ -39,23 +34,41 @@ client.on("message", async function(message) {
 
   if (command == 'tt') {
     getTimeTable((day, data) => {
-      embedMessage(message, day, data);
+      embedMessage(message.channel, day, data);
     });
   }
 
-  else if (command == 'ping') {
-    // let j = schedule.scheduleJob('* * * * * *', function(){
-    //   reminder('The world is going to end today.', null, message);
-    // });
-	let timeTaken = Date.now() - message.createdTimestamp
-    message.channel.send(`Pong. Latency: ${timeTaken}ms`);
+  else if (command == 'remind') {
+    Reminder.validate(args, (data, err) => {
+      if (err) {
+        embedMessage(message.channel, 'Incorrect fromat!', 'Use \`;remind at <HH:MM> <AM/PM> on <#channel> <reminder message>\`');
+        return;
+      }
+      Reminder.set(client, data);
+    });
   }
 
-  else{
-    d = new Date();
-    console.log(d.toTimeString());
-    embedMessage(message, command);
-  }
+  // else if (command == 'check') {
+  //   let d = new Date();
+  //   d.setMinutes(25);
+  //   let j = schedule.scheduleJob('test', d, (fireDate) => {
+  //     embedMessage(message.channel, 'Yo peeps!');
+  //     schedule.scheduledJobs.test.cancel();
+  //     console.log(schedule.scheduledJobs);
+  //   })
+  //   // console.log(args[0].substring(2, args[0].length - 1));
+  //   // client.channels.cache.get(args[0]).send('check');
+  // }
+
+  // else if (command == 'jobs') {
+  //   console.log(schedule.scheduledJobs['test']);
+  // }
+
+  // else{
+  //   d = new Date();
+  //   console.log(d.toTimeString());
+  //   embedMessage(message.channel, command);
+  // }
 });
 
 client.login(process.env.BOT_TOKEN);
