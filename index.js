@@ -13,14 +13,26 @@ const prefix = process.env.PREFIX;
 client.once("ready", () => {
     console.log('Ready for some action.');
     console.log('Scheduling to send the time table at 6.30 AM everyday.');
-    let job = schedule.scheduleJob('timetable', '30 6 * * 1-5', function() {
-      getTimeTable((day, data) => {
+    let job = schedule.scheduleJob('timetable', '30 6,21 * * 1-5', function() {
+      let date = new Date();
+      let nextDay = 0;
+      if (date.getHours() > 18) nextDay = 1;
+      getTimeTable(nextDay, (day, data) => {
         client.channels.cache.get('741443367111753820')
           .send(new Discord.MessageEmbed()
             .setColor('#0099ff')
             .setTitle(day)
             .setDescription(data)
         )});
+    });
+    schedule.scheduleJob('tt-sat', '30 21 * * 6', () => {
+      getTimeTable(1, (day, data) => {
+        client.channels.cache.get('741443367111753820')
+          .send(new Discord.MessageEmbed()
+            .setColor('#0099ff')
+            .setTitle(day)
+            .setDescription(data))
+      });
     });
 });
 
@@ -33,12 +45,22 @@ client.on("message", async function(message) {
   const command = args.shift().toLowerCase();
 
   if (command == 'tt') {
-    getTimeTable((day, data) => {
+    let d = new Date();
+    let nextDay = 0;
+    if (d.getHours() > 17) {
+      if (d.getDay() >= 5) nextDay = d.getDay() % 5 + 3;
+      else nextDay = 1;
+    }
+    getTimeTable(nextDay, (day, data) => {
       embedMessage(message.channel, day, data);
     });
   }
 
   else if (command == 'remind') {
+    if (!message.member.roles.cache.has(message.guild.roles.cache.get('739449134456766464'))) {
+      message.reply('OMKV...');
+      return;
+    }
     Reminder.validate(args, (data, err) => {
       if (err) {
         embedMessage(message.channel, 'Incorrect fromat!', 'Use \`;remind at <HH:MM> <AM/PM> on <#channel> <reminder message>\`');
