@@ -58,7 +58,7 @@ client.on("message", async function(message) {
 
   else if (command == 'remind') {
     if (!message.member.roles.cache.has(message.guild.roles.cache.get('739449134456766464').id)) {
-      message.reply('OMKV');
+      message.reply('OMKV...');
       return;
     }
     Reminder.validate(args, (data, err) => {

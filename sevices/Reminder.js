@@ -29,6 +29,7 @@ function validate(args, callback) {
 
 function set(client, data) {
     let date = new Date();
+    if (date.getHours() > data.atHour) date.setDate(date.getDate() + 1);
     date.setHours(data.atHour, data.atMin, 0);
     let jobID = Date.now().toString();
     let reminder = schedule.scheduleJob(jobID, date, () => {
