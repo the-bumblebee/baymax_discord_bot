@@ -57,13 +57,13 @@ client.on("message", async function(message) {
   }
 
   else if (command == 'remind') {
-    if (!message.member.roles.cache.has(message.guild.roles.cache.get('739449134456766464'))) {
-      message.reply('OMKV...');
+    if (!message.member.roles.cache.has(message.guild.roles.cache.get('739449134456766464').id)) {
+      message.reply('OMKV');
       return;
     }
     Reminder.validate(args, (data, err) => {
       if (err) {
-        embedMessage(message.channel, 'Incorrect fromat!', 'Use \`;remind at <HH:MM> <AM/PM> on <#channel> <reminder message>\`');
+        embedMessage(message.channel, 'Incorrect format!', 'Use \`;remind at <HH:MM> <AM/PM> on <#channel> <reminder message>\`');
         return;
       }
       Reminder.set(client, data);
