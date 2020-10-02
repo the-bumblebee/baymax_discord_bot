@@ -89,7 +89,7 @@ client.on("message", async function(message) {
   }
 
   else {
-    message.channel.reply('SSD MSM mwonuseeee....');
+    message.reply('SSD MSM mwonuseeee....');
   }
   
   // else if (command == 'check') {
