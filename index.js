@@ -4,6 +4,7 @@ const { embedMessage } = require('./sevices/misc');
 const getTimeTable = require('./sevices/getTimeTable');
 const Reminder = require('./sevices/Reminder');
 const fs = require('fs');
+const { time } = require('console');
 require('dotenv').config();
 
 const client = new Discord.Client();
@@ -37,6 +38,7 @@ client.once("ready", () => {
 });
 
 client.on("message", async function(message) {
+  
   if (message.author.bot) return;
   if (!message.content.startsWith(prefix)) return;
 
@@ -44,6 +46,11 @@ client.on("message", async function(message) {
   const args = commandBody.split(' ');
   const command = args.shift().toLowerCase();
 
+  if (message.author.id === "707528865240711188") {
+    message.reply('Oom*ikko..');
+    return;
+  }
+  
   if (command == 'tt') {
     let d = new Date();
     let nextDay = 0;
@@ -56,6 +63,7 @@ client.on("message", async function(message) {
     });
   }
 
+  
   else if (command == 'remind') {
     if (!message.member.roles.cache.has(message.guild.roles.cache.get('739449134456766464').id)) {
       message.reply('OMKV...');
@@ -70,11 +78,20 @@ client.on("message", async function(message) {
     });
   }
   
+  
   else if (command === "ping") {
     const timeTaken = Date.now() - message.createdTimestamp;
     message.channel.send(`Pong. Latency: ${timeTaken}ms`);
   }
 
+  else if (command == "test") {
+    console.log(message.author.id);
+  }
+
+  else {
+    message.channel.reply('SSD MSM mwonuseeee....');
+  }
+  
   // else if (command == 'check') {
   //   let d = new Date();
   //   d.setMinutes(25);
@@ -99,3 +116,16 @@ client.on("message", async function(message) {
 });
 
 client.login(process.env.BOT_TOKEN);
+
+// TODO:
+
+// 1. Regex for string parsing(reminder)
+//         time parsing 12 hr and 24 hr
+//         [at <time>/in <time> [on <channel] <reminder>] 
+// 2. SQLite3 db for persistence.
+//         Associated startup method to schedule jobs.
+// 3. Refactor code a bit.
+// 4. Get reminders in a server.
+// 5. Independent data handling between servers.
+// 6. Easy adding links for courses. One time and every time. Command only for admin and moderator.
+// 7. Generate time table from db. Also send associated links if available in db.
