@@ -88,6 +88,13 @@ client.on("message", async function(message) {
     console.log(message.author.id);
   }
 
+  else if (command == "omkv") {
+    if (args.length < 1 || args[0] !== '<@!707528865240711188>') {
+      return;
+    }
+    message.channel.send(`<@!707528865240711188>, Odikko Kandam Vazhi`)
+  }
+
   else {
     message.reply('SSD MSM mwonuseeee....');
   }
