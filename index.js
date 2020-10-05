@@ -26,7 +26,7 @@ client.once("ready", () => {
             .setDescription(data)
         )});
     });
-    schedule.scheduleJob('tt-sat', '30 21 * * 6', () => {
+    schedule.scheduleJob('tt-sat', '30 21 * * 0', () => {
       getTimeTable(1, (day, data) => {
         client.channels.cache.get('741443367111753820')
           .send(new Discord.MessageEmbed()
