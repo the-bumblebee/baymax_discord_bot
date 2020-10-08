@@ -3,13 +3,17 @@ const schedule = require('node-schedule');
 const { embedMessage } = require('./sevices/misc');
 const getTimeTable = require('./sevices/getTimeTable');
 const Reminder = require('./sevices/Reminder');
+const Events = require('./sevices/Events');
 const fs = require('fs');
 const { time } = require('console');
 require('dotenv').config();
 
 const client = new Discord.Client();
 
-const prefix = process.env.PREFIX;
+const PREFIX = process.env.PREFIX;
+const dbPath = './data.db';
+let EVENT_ROWS = [];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 client.once("ready", () => {
     console.log('Ready for some action.');
@@ -18,13 +22,29 @@ client.once("ready", () => {
       let date = new Date();
       let nextDay = 0;
       if (date.getHours() > 18) nextDay = 1;
+      let channel = client.channels.cache.get('741443367111753820');
       getTimeTable(nextDay, (day, data) => {
-        client.channels.cache.get('741443367111753820')
-          .send(new Discord.MessageEmbed()
+        channel.send(new Discord.MessageEmbed()
             .setColor('#0099ff')
             .setTitle(day)
             .setDescription(data)
-        )});
+        );
+      });
+      let eventString = '';
+      Events.getAll(dbPath, (err, rows) => {
+        if (!rows) return;
+        const embed = new Discord.MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle('Upcoming Events');
+        let count = 1;
+        rows.forEach(row => {
+          let d = new Date(row.date);
+          eventString += `\n\n${count}) **${d.getDate()} ${MONTHS[d.getMonth()]}**: ${row.event_name}`;
+          count += 1;
+        })
+        embed.setDescription(eventString);
+        channel.send(embed);
+      });
     });
     schedule.scheduleJob('tt-sat', '30 21 * * 0', () => {
       getTimeTable(1, (day, data) => {
@@ -35,21 +55,17 @@ client.once("ready", () => {
             .setDescription(data))
       });
     });
+    Events.initTable(dbPath);
 });
 
 client.on("message", async function(message) {
   
   if (message.author.bot) return;
-  if (!message.content.startsWith(prefix)) return;
+  if (!message.content.startsWith(PREFIX)) return;
 
-  const commandBody = message.content.slice(prefix.length);
+  const commandBody = message.content.slice(PREFIX.length);
   const args = commandBody.split(' ');
   const command = args.shift().toLowerCase();
-
-  if (message.author.id === "707528865240711188") {
-    message.reply('Oom*ikko..');
-    return;
-  }
   
   if (command == 'tt') {
     let d = new Date();
@@ -62,11 +78,10 @@ client.on("message", async function(message) {
       embedMessage(message.channel, day, data);
     });
   }
-
   
   else if (command == 'remind') {
     if (!message.member.roles.cache.has(message.guild.roles.cache.get('739449134456766464').id)) {
-      message.reply('OMKV...');
+      message.reply('No can do bro. You ain\'t got them roles for this command.');
       return;
     }
     Reminder.validate(args, (data, err) => {
@@ -78,48 +93,121 @@ client.on("message", async function(message) {
     });
   }
   
-  
   else if (command === "ping") {
     const timeTaken = Date.now() - message.createdTimestamp;
     message.channel.send(`Pong. Latency: ${timeTaken}ms`);
   }
 
-  else if (command == "test") {
-    console.log(message.author.id);
-  }
-
-  else if (command == "omkv") {
-    if (args.length < 1 || args[0] !== '<@!707528865240711188>') {
+  else if (command === "events") {
+   
+    if (args[0] === "show") {
+      let eventString = '';
+      Events.getAll(dbPath, (err, rows) => {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        EVENT_ROWS = rows;
+        const embed = new Discord.MessageEmbed()
+          .setColor('#0099ff')
+          .setTitle('Upcoming Events');
+        let count = 1;
+        rows.forEach(row => {
+          let d = new Date(row.date);
+          eventString += `\n\n${count}) **${d.getDate()} ${MONTHS[d.getMonth()]}**: ${row.event_name}`;
+          count += 1;
+        })
+        embed.setDescription(eventString);
+        message.channel.send(embed);
+      });
       return;
     }
-    message.channel.send(`<@!707528865240711188>, Odikko Kandam Vazhi`)
+
+    else if (args[0] == "delete") {
+      if (EVENT_ROWS.length == 0 || args.length != 2) {
+        embedMessage(message.channel, 'Incorrect Use!', 'Use `;events show` and then run `;events delete <index_from_the_events_list>`.');
+        return;
+      }
+      index = parseInt(args[1]);
+      if (!index) {
+        embedMessage(message.channel, 'Incorrect Use!', 'Use `;events show` and then run `;events delete <index_from_the_events_list>`.');
+        return;
+      }
+      if (index > EVENT_ROWS.length) {
+        embedMessage(message.channel, 'Invalid Index!', 'Index should be within the given values.');
+        return;
+      }
+      index -= 1;
+      Events.deleteEntry(dbPath, EVENT_ROWS[index], err => {
+        if (err) {
+          message.reply("Error trying to delete event");
+          return;
+        }
+      });
+      eventString = `\n\`${EVENT_ROWS[index].event_name} on ${new Date(EVENT_ROWS[index].date).toLocaleDateString()}\``;
+      message.reply("The following event was deleted." + eventString);
+      EVENT_ROWS = [];
+      return;
+    }
+
+    else if (args[0] == "add") {
+      argString = args.join(' ');
+      let event = Events.parse(argString);
+      if (event.err) {
+        embedMessage(message.channel, 'Incorrect format!', 'Use `;events add "event" on DD/MM/YY`.');
+        return;
+      }
+
+      Events.add(dbPath, event, err => {
+        if (err) {
+          message.reply('Error encountered when adding event to database.');
+          return;
+        }
+        message.reply('Event added successfully.');
+      });
+      return;
+    }
+
+    else {
+      let helpString = "Use `;help events` to see usage of `;events` command.";
+      embedMessage(message.channel, 'Incorrect Usage!', helpString);
+      return;
+    }
+  }
+
+  else if (command == "help") {
+    if (args.length === 0) {
+      let helpString = "Available commands:";
+      helpString += "\n\n1. `;help` - Displays this message.";
+      helpString += "\n\n2. `;ping` - Used to check the status of the bot also the latency.";
+      helpString += "\n\n3. `;remind` - Reserved for admins.";
+      helpString += "\n\n4. `;tt` - Displays the days's timetable and if used after 5pm, displays next day's timetable.";
+      helpString += "\n\n5. `;events` - Used for configuring events. Type `;help events` for more info."
+      helpString += "\n\n**Note:** The day's timetable and upcoming events are displayed everyday at 6.30 AM except";
+      helpString += " on weekends. In addition, the next day's timetable is displayed everyday at 9.30 PM except on";
+      helpString += " fridays and saturdays.";
+      embedMessage(message.channel, 'Usage!', helpString);
+      return;
+    }
+    else if (args[0] === "events") {
+      let helpString = "Avalaible options:";
+      helpString += "\n\n1. `;events show` to list all the added events.";
+      helpString += "\n\n2. `;events delete <N>` to delete Nth event. Note: run `;events show` before this.";
+      helpString += "\n\n3. `;events add \"event\" on DD/MM/YY` to add an event. eg: `;events add \"Exam\" on 23/12/20`."
+      embedMessage(message.channel, '`;events` Usage!', helpString);
+    }
+    else {
+      embedMessage(message.channel, 'Incorrect Usage!', 'Use `;help` to list all the available commands and documentation.');
+      return;
+    }
+
   }
 
   else {
-    message.reply('SSD MSM mwonuseeee....');
+    embedMessage(message.channel, 'Incorrect Command!', 'Use `;help` to see all the available commands.');
+    return;
   }
-  
-  // else if (command == 'check') {
-  //   let d = new Date();
-  //   d.setMinutes(25);
-  //   let j = schedule.scheduleJob('test', d, (fireDate) => {
-  //     embedMessage(message.channel, 'Yo peeps!');
-  //     schedule.scheduledJobs.test.cancel();
-  //     console.log(schedule.scheduledJobs);
-  //   })
-  //   // console.log(args[0].substring(2, args[0].length - 1));
-  //   // client.channels.cache.get(args[0]).send('check');
-  // }
 
-  // else if (command == 'jobs') {
-  //   console.log(schedule.scheduledJobs['test']);
-  // }
-
-  // else{
-  //   d = new Date();
-  //   console.log(d.toTimeString());
-  //   embedMessage(message.channel, command);
-  // }
 });
 
 client.login(process.env.BOT_TOKEN);
