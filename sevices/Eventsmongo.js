@@ -51,7 +51,7 @@ function getAll(connection, callback) {
         return;
     }
     Event.aggregate([
-        { $match: { date:{ $gte: Date.now() }}},
+        { $match: { date:{ $gte: Date.now() - 86400000 }}},
         { $group: {
             _id: { 
                 event_name: "$event_name",
