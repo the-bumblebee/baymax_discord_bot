@@ -50,27 +50,6 @@ client.once("ready", () => {
             .setDescription(data)
         );
       });
-      let eventString = "";
-      Events.getAll(mongoose.connection, (err, docs) => {
-        if (err) {
-          message.reply('Error getting events.');
-          console.log('[EVENT_SHOW]\n' + err);
-          return;
-        }
-        EVENT_ROWS = docs;
-        const embed = new Discord.MessageEmbed()
-          .setColor('#0099ff')
-          .setTitle('Upcoming Events');
-        let count = 1;
-        if (docs.length === 0) eventString = "No events to show.";
-        docs.forEach(doc => {
-          let d = new Date(doc.date);
-          eventString += `\n\n${count}) **${d.getDate()} ${MONTHS[d.getMonth()]}**: ${doc.event_name}`;
-          count += 1;
-        })
-        embed.setDescription(eventString);
-        message.channel.send(embed);
-      });
       schedule.scheduleJob('tt-sat', '30 21 * * 0', () => {
         getTimeTable(1, (day, data) => {
           client.channels.cache.get('741443367111753820')
