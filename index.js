@@ -3,10 +3,26 @@ const schedule = require('node-schedule');
 const { embedMessage } = require('./sevices/misc');
 const getTimeTable = require('./sevices/getTimeTable');
 const Reminder = require('./sevices/Reminder');
-const Events = require('./sevices/Events');
-const fs = require('fs');
-const { time } = require('console');
+// const Events = require('./sevices/Events');
+const Events = require('./sevices/Eventsmongo');
+const mongoose = require('mongoose');
 require('dotenv').config();
+
+mongoose.connect(
+  process.env.DB_STRING,
+  {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useCreateIndex: true
+  },
+  err => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.log('Connected to DB');
+  }
+);
 
 const client = new Discord.Client();
 
@@ -19,6 +35,10 @@ client.once("ready", () => {
     console.log('Ready for some action.');
     console.log('Scheduling to send the time table at 6.30 AM everyday.');
     let job = schedule.scheduleJob('timetable', '30 6,21 * * 1-5', function() {
+
+      Events.cleanUp(mongoose.connection, err => {
+        console.log("[EVENT_CLEANUP]\n" + err);
+      })
       let date = new Date();
       let nextDay = 0;
       if (date.getHours() > 18) nextDay = 1;
@@ -30,33 +50,43 @@ client.once("ready", () => {
             .setDescription(data)
         );
       });
-      let eventString = '';
-      Events.getAll(dbPath, (err, rows) => {
-        if (!rows) return;
+      let eventString = "";
+      Events.getAll(mongoose.connection, (err, docs) => {
+        if (err) {
+          message.reply('Error getting events.');
+          console.log('[EVENT_SHOW]\n' + err);
+          return;
+        }
+        EVENT_ROWS = docs;
         const embed = new Discord.MessageEmbed()
           .setColor('#0099ff')
           .setTitle('Upcoming Events');
         let count = 1;
-        rows.forEach(row => {
-          let d = new Date(row.date);
-          eventString += `\n\n${count}) **${d.getDate()} ${MONTHS[d.getMonth()]}**: ${row.event_name}`;
+        if (docs.length === 0) eventString = "No events to show.";
+        docs.forEach(doc => {
+          let d = new Date(doc.date);
+          eventString += `\n\n${count}) **${d.getDate()} ${MONTHS[d.getMonth()]}**: ${doc.event_name}`;
           count += 1;
         })
         embed.setDescription(eventString);
-        channel.send(embed);
+        message.channel.send(embed);
+      });
+      schedule.scheduleJob('tt-sat', '30 21 * * 0', () => {
+        getTimeTable(1, (day, data) => {
+          client.channels.cache.get('741443367111753820')
+            .send(new Discord.MessageEmbed()
+              .setColor('#0099ff')
+              .setTitle(day)
+              .setDescription(data))
+        });
       });
     });
-    schedule.scheduleJob('tt-sat', '30 21 * * 0', () => {
-      getTimeTable(1, (day, data) => {
-        client.channels.cache.get('741443367111753820')
-          .send(new Discord.MessageEmbed()
-            .setColor('#0099ff')
-            .setTitle(day)
-            .setDescription(data))
-      });
-    });
-    Events.initTable(dbPath);
 });
+
+mongoose.connection.on("error", function() {
+  client.channels.cache.get('739440153243942933')
+    .send('<@490390568623669251>, Can\'t connect to MongoDB.');
+})
 
 client.on("message", async function(message) {
   
@@ -102,19 +132,21 @@ client.on("message", async function(message) {
    
     if (args[0] === "show") {
       let eventString = '';
-      Events.getAll(dbPath, (err, rows) => {
+      Events.getAll(mongoose.connection, (err, docs) => {
         if (err) {
-          console.log(err);
+          message.reply('Error getting events.');
+          console.log('[EVENT_SHOW]\n' + err);
           return;
         }
-        EVENT_ROWS = rows;
+        EVENT_ROWS = docs;
         const embed = new Discord.MessageEmbed()
           .setColor('#0099ff')
           .setTitle('Upcoming Events');
         let count = 1;
-        rows.forEach(row => {
-          let d = new Date(row.date);
-          eventString += `\n\n${count}) **${d.getDate()} ${MONTHS[d.getMonth()]}**: ${row.event_name}`;
+        if (docs.length === 0) eventString = "No events to show.";
+        docs.forEach(doc => {
+          let d = new Date(doc.date);
+          eventString += `\n\n${count}) **${d.getDate()} ${MONTHS[d.getMonth()]}**: ${doc.event_name}`;
           count += 1;
         })
         embed.setDescription(eventString);
@@ -138,9 +170,10 @@ client.on("message", async function(message) {
         return;
       }
       index -= 1;
-      Events.deleteEntry(dbPath, EVENT_ROWS[index], err => {
+      Events.deleteEntry(mongoose.connection, EVENT_ROWS[index], err => {
         if (err) {
           message.reply("Error trying to delete event");
+          console.log('[EVENT_DEL]\n' + err);
           return;
         }
       });
@@ -158,9 +191,10 @@ client.on("message", async function(message) {
         return;
       }
 
-      Events.add(dbPath, event, err => {
+      Events.add(mongoose.connection, event, err => {
         if (err) {
-          message.reply('Error encountered when adding event to database.');
+          message.reply('```\nError encountered when adding event to database.' + '\n' + err + '```');
+          console.log('[EVENT_ADD]\n' + err);
           return;
         }
         message.reply('Event added successfully.');
