@@ -2,7 +2,7 @@
 
 9 - 10: 
 
-10 - 11: Embedded Systems
+10 - 11: Embedded Systems, MET
 
 11 - 12:
 
