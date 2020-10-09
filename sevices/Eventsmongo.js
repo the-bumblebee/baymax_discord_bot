@@ -52,14 +52,14 @@ function getAll(connection, callback) {
     }
     Event.aggregate([
         { $match: { date:{ $gte: Date.now() }}},
-        { $sort: { date: 1, event_name: 1 }},
         { $group: {
             _id: { 
                 event_name: "$event_name",
                 date: "$date"
             }
         }},
-        { $project: { _id: 0, event_name: "$_id.event_name", date: "$_id.date" }}
+        { $project: { _id: 0, event_name: "$_id.event_name", date: "$_id.date" }},
+        { $sort: { date: 1, event_name: 1 }}
     ])
     .then(docs => callback(null, docs));
 
