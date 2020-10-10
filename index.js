@@ -114,6 +114,10 @@ client.on("message", async function(message) {
     message.channel.send(`Pong. Latency: ${timeTaken}ms`);
   }
 
+  else if (command === "sanin") {
+    message.channel.send('<@707528865240711188>, Oo**kko');
+  }
+
   else if (command === "events") {
    
     if (args[0] === "show") {
