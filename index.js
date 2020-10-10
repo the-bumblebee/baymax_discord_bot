@@ -2,7 +2,7 @@ const Discord = require("discord.js");
 const { embedMessage, initSchedule } = require("./sevices/misc");
 const getTimeTable = require("./sevices/getTimeTable");
 const Reminder = require("./sevices/Reminder");
-const Events = require("./sevices/Eventsmongo");
+const Events = require("./sevices/Events");
 const mongoose = require("mongoose");
 require("dotenv").config();
 

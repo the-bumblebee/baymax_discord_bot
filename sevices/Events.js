@@ -1,30 +1,18 @@
-const sqlite3 = require('sqlite3').verbose();
+const Event = require('../models/Event');
 
-function initTable(dbPath) {
-    let db = new sqlite3.Database(dbPath, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
-    db.serialize(function() {
-        db.run("CREATE TABLE IF NOT EXISTS events ( id INTEGER PRIMARY KEY AUTOINCREMENT, event_name TEXT NOT NULL, date INTEGER NOT NULL, event_description TEXT );");
-    });
-    db.close();
+function dropTable(connection, errorHandler) {
+    if (!isConnected(connection)) {
+        let err = "Database ain't connected.";
+        errorHandler(err);
+        return;
+    }
+    // (err, result)
+    connection.db.dropCollection('Events', errorHandler);
 }
 
-function dropTable(dbPath) {
-    let db = new sqlite3.Database(dbPath, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
-    db.serialize(function() {
-        db.run("DROP TABLE IF EXISTS events;");
-    });
-    db.close();
-}
-
-function checkDBConnection(dbPath, errorHandler) {
-    let db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE, err => {
-        if (err) {
-            console.log("Error connecting to database");
-        } else {
-            console.log("Connection successful");
-        }
-    });
-    db.close();
+function isConnected(connection) {
+    if (connection.readyState !== 1) return false;
+    else return true;
 }
 
 function parse(argString) {
@@ -41,44 +29,69 @@ function parse(argString) {
         return {err: "Incorrect date"};
     }
 
-    return { eventName: addMatch[1], date: epoch };
+    return { event_name: addMatch[1], date: epoch };
 }
 
-function add(dbPath, event, errorHandler) {
-    let db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE);
-    db.serialize(function() {
-        db.run("INSERT INTO events (event_name, date, event_description) VALUES (?, ?, ?)", [event.eventName, event.date], errorHandler);
-    });
-    db.close();
+function add(connection, eventObj, errorHandler) {
+    if (!isConnected(connection)) {
+        let err = "Database ain't connected.";
+        errorHandler(err);
+        return;
+    }
+
+    let event = new Event(eventObj);
+    event.save()
+        .finally(errorHandler);
 }
 
-function getAll(dbPath, rowHandler) {
-    let db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE);
-    db.serialize(function() {
-        db.all("SELECT * FROM events WHERE date >= ? GROUP BY date, event_name ORDER BY date", [Date.now()], rowHandler);
-    });
-
-    db.close();
-}
-
-function deleteEntry(dbPath, event, errorHandler) {
-    let db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE);
-    db.serialize(function() {
-        db.get("DELETE FROM events WHERE event_name = ? and date = ?", [event.event_name, event.date], errorHandler);
-    })
-    db.close();
-}
-
-function cleanUp(dbPath) {
-    let db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE);
-    db.serialize(function() {
-        db.run("DELETE FROM events WHERE date < ?", [Date.now()], err => {
-            if (err) {
-                console.log("Error occured when cleaning up.");
+function getAll(connection, callback) {
+    if (!isConnected(connection)) {
+        let err = "Database ain't connected.";
+        callback(err, null);
+        return;
+    }
+    Event.aggregate([
+        { $match: { date:{ $gte: Date.now() - 86400000 }}},
+        { $group: {
+            _id: { 
+                event_name: "$event_name",
+                date: "$date"
             }
-        });
-    });
-    db.close();
+        }},
+        { $project: { _id: 0, event_name: "$_id.event_name", date: "$_id.date" }},
+        { $sort: { date: 1, event_name: 1 }}
+    ])
+    .then(docs => callback(null, docs));
+
 }
 
-module.exports = { initTable, dropTable, checkDBConnection, parse, add, deleteEntry, getAll, cleanUp };
+function deleteEntry(connection, event, errorHandler) {
+    if (!isConnected(connection)) {
+        errorHandler("Database ain't connected.");
+        return;
+    }
+    Event.deleteMany(event, err => {
+        console.log(err);
+    });  
+}
+
+function cleanUp(connection, errorHandler) {
+    if (!isConnected(connection)) {
+        let err = "Database ain't connected.";
+        errorHandler(err);
+        return;
+    }
+    Event.deleteMany({ date: { $lt: Date.now()} }, err => {
+        errorHandler(err);
+    });   
+}
+
+module.exports = {
+    dropTable,
+    isConnected,
+    parse,
+    add,
+    getAll,
+    deleteEntry,
+    cleanUp
+};
