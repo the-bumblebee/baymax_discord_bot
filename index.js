@@ -90,10 +90,10 @@ client.on("message", async function(message) {
     //   } else if (d.getDay() === 0) {
     //     nextDay = 1;
     //   }
+    // }
     if (d.getDay() === 6) nextDay = 2;
     else if (d.getDay() === 0) nextDay = 1;
     else if (d.getDay() === 5 && d.getHours() > 17) nextDay = 3;
-    }
     getTimeTable(nextDay, (day, data) => {
       embedMessage(message.channel, day, data);
     });
