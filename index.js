@@ -79,17 +79,20 @@ client.on("message", async function(message) {
   if (command == 'tt') {
     let d = new Date();
     let nextDay = 0;
-    if (d.getHours() > 17) {
-      if (d.getDay() === 6) nextDay = 2;
-      else if (d.getDay() >= 5) nextDay = d.getDay() % 5 + 3;
-      else nextDay = 1;
-    }
-    else {
-      if (d.getDay() === 6) {
-        nextDay = 2;
-      } else if (d.getDay() === 0) {
-        nextDay = 1;
-      }
+    // if (d.getHours() > 17) {
+    //   if (d.getDay() === 6) nextDay = 2;
+    //   else if (d.getDay() >= 5) nextDay = d.getDay() % 5 + 3;
+    //   else nextDay = 1;
+    // }
+    // else {
+    //   if (d.getDay() === 6) {
+    //     nextDay = 2;
+    //   } else if (d.getDay() === 0) {
+    //     nextDay = 1;
+    //   }
+    if (d.getDay() === 6) nextDay = 2;
+    else if (d.getDay() === 0) nextDay = 1;
+    else if (d.getDay() === 5 && d.getHours() > 17) nextDay = 3;
     }
     getTimeTable(nextDay, (day, data) => {
       embedMessage(message.channel, day, data);
