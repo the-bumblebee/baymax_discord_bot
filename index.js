@@ -83,13 +83,6 @@ client.on("message", async function(message) {
       if (d.getDay() >= 5) nextDay = d.getDay() % 5 + 3;
       else nextDay = 1;
     }
-    else {
-      if (d.getDay() === 6) {
-        nextDay = 2;
-      } else if (d.getDay() === 0) {
-        nextDay = 1;
-      }
-    }
     getTimeTable(nextDay, (day, data) => {
       embedMessage(message.channel, day, data);
     });
