@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const schedule = require("node-schedule");
 const Events = require("./Events");
 const mongoose = require("mongoose");
+const getTimeTable = require("./getTimeTable");
 
 function embedMessage(channel, title, text) {
     embedMessage = new Discord.MessageEmbed()
@@ -13,7 +14,7 @@ function embedMessage(channel, title, text) {
     channel.send(embedMessage);
 }
 
-function initSchedule() {
+function initSchedule(client) {
     console.log("[INFO] Scheduling event clean up at 6.30 everyday.");
     schedule.scheduleJob("event_cleanup", "15 9 * * *", function () {
         Events.cleanUp(mongoose.connection, (err) => {

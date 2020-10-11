@@ -41,7 +41,9 @@ const MONTHS = [
     "Dec",
 ];
 
-client.once("ready", initSchedule);
+client.once("ready", () => {
+    initSchedule(client);
+});
 
 mongoose.connection.on("error", function () {
     client.channels.cache
