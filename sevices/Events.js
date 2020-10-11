@@ -1,4 +1,4 @@
-const Event = require('../models/Event');
+const Event = require("../models/Event");
 
 function dropTable(connection, errorHandler) {
     if (!isConnected(connection)) {
@@ -7,7 +7,7 @@ function dropTable(connection, errorHandler) {
         return;
     }
     // (err, result)
-    connection.db.dropCollection('Events', errorHandler);
+    connection.db.dropCollection("Events", errorHandler);
 }
 
 function isConnected(connection) {
@@ -22,11 +22,14 @@ function parse(argString) {
     let onMatch = onExpr.exec(argString);
 
     if (!addMatch || !onMatch) {
-        return {err: "Incorrect format"};
+        return { err: "Incorrect format" };
     }
     let epoch = Date.parse(`${onMatch[2]}/${onMatch[1]}/${onMatch[3]}`);
-    if (!epoch || epoch < Date.now()) {
-        return {err: "Incorrect date"};
+    if (
+        !epoch ||
+        epoch < Date.parse(new Date().toLocaleDateString() - 600000)
+    ) {
+        return { err: "Incorrect date" };
     }
 
     return { event_name: addMatch[1], date: epoch };
@@ -40,8 +43,7 @@ function add(connection, eventObj, errorHandler) {
     }
 
     let event = new Event(eventObj);
-    event.save()
-        .finally(errorHandler);
+    event.save().finally(errorHandler);
 }
 
 function getAll(connection, callback) {
@@ -51,18 +53,30 @@ function getAll(connection, callback) {
         return;
     }
     Event.aggregate([
-        { $match: { date:{ $gte: Date.now() - 86400000 }}},
-        { $group: {
-            _id: { 
-                event_name: "$event_name",
-                date: "$date"
-            }
-        }},
-        { $project: { _id: 0, event_name: "$_id.event_name", date: "$_id.date" }},
-        { $sort: { date: 1, event_name: 1 }}
-    ])
-    .then(docs => callback(null, docs));
-
+        {
+            $match: {
+                date: {
+                    $gte: Date.parse(new Date().toLocaleDateString()) - 600000,
+                },
+            },
+        },
+        {
+            $group: {
+                _id: {
+                    event_name: "$event_name",
+                    date: "$date",
+                },
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                event_name: "$_id.event_name",
+                date: "$_id.date",
+            },
+        },
+        { $sort: { date: 1, event_name: 1 } },
+    ]).then((docs) => callback(null, docs));
 }
 
 function deleteEntry(connection, event, errorHandler) {
@@ -70,9 +84,9 @@ function deleteEntry(connection, event, errorHandler) {
         errorHandler("Database ain't connected.");
         return;
     }
-    Event.deleteMany(event, err => {
+    Event.deleteMany(event, (err) => {
         console.log(err);
-    });  
+    });
 }
 
 function cleanUp(connection, errorHandler) {
@@ -81,9 +95,12 @@ function cleanUp(connection, errorHandler) {
         errorHandler(err);
         return;
     }
-    Event.deleteMany({ date: { $lt: Date.now()} }, err => {
-        errorHandler(err);
-    });   
+    Event.deleteMany(
+        { date: { $lt: Date.parse(new Date().toLocaleDateString()) - 600000 } },
+        (err) => {
+            if (err) errorHandler(err);
+        }
+    );
 }
 
 module.exports = {
@@ -93,5 +110,5 @@ module.exports = {
     add,
     getAll,
     deleteEntry,
-    cleanUp
+    cleanUp,
 };
