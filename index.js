@@ -162,6 +162,32 @@ client.on("message", async function (message) {
         }
     } else if (client.commands.has(command)) {
         client.commands.get(command).execute(message, args);
+    } else if (command === "mute") {
+        if (message.member.voice.channel) {
+            let channel = message.member.voice.channel;
+            for (const [memberID, member] of channel.members) {
+                member.voice.setMute(true);
+                member.voice.setDeaf(true);
+            }
+            message.channel.send(
+                `All the users in \`${channel.name}\` are muted. Use\`;unmute\` to unmute.`
+            );
+        } else {
+            message.reply("You need to join a voice channel, first.");
+        }
+    } else if (command === "unmute") {
+        if (message.member.voice.channel) {
+            let channel = message.member.voice.channel;
+            for (const [memberID, member] of channel.members) {
+                member.voice.setMute(false);
+                member.voice.setDeaf(false);
+            }
+            message.channel.send(
+                `All the users in \`${channel.name}\` are unmuted.`
+            );
+        } else {
+            message.reply("You need to join a voice channel, first.");
+        }
     } else {
         embedMessage(
             message.channel,
@@ -186,3 +212,7 @@ client.login(process.env.BOT_TOKEN);
 // 5. Independent data handling between servers.
 // 6. Easy adding links for courses. One time and every time. Command only for admin and moderator.
 // 7. Generate time table from db. Also send associated links if available in db.
+
+// https://stackoverflow.com/questions/58052042/how-can-i-create-a-dynamic-chat-in-a-discord-js-bot
+// MessageCollectorOptions
+// CollectorFilter
