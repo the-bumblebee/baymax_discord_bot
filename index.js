@@ -1,10 +1,11 @@
 const Discord = require("discord.js");
+const fs = require("fs");
 const { embedMessage, initSchedule } = require("./sevices/misc");
-const getTimeTable = require("./sevices/getTimeTable");
-const Reminder = require("./sevices/Reminder");
 const Events = require("./sevices/Events");
 const mongoose = require("mongoose");
 require("dotenv").config();
+
+let EVENT_ROWS = [];
 
 mongoose.connect(
     process.env.DB_STRING,
@@ -22,24 +23,20 @@ mongoose.connect(
     }
 );
 
-const client = new Discord.Client();
-
 const PREFIX = process.env.PREFIX;
-let EVENT_ROWS = [];
-const MONTHS = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
-];
+
+const client = new Discord.Client();
+client.commands = new Discord.Collection();
+
+const commandFiles = fs
+    .readdirSync("./commands")
+    .filter((file) => file.endsWith(".js"));
+
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+
+    client.commands.set(command.name, command);
+}
 
 client.once("ready", () => {
     initSchedule(client);
@@ -59,43 +56,12 @@ client.on("message", async function (message) {
     const args = commandBody.split(" ");
     const command = args.shift().toLowerCase();
 
-    if (command == "tt") {
-        getTimeTable((day, data) => {
-            embedMessage(message.channel, day, data);
-        });
-    } else if (command == "remind") {
-        if (
-            !message.member.roles.cache.has(
-                message.guild.roles.cache.get("739449134456766464").id
-            )
-        ) {
-            message.reply(
-                "No can do bro. You ain't got them roles for this command."
-            );
-            return;
-        }
-        Reminder.validate(args, (data, err) => {
-            if (err) {
-                embedMessage(
-                    message.channel,
-                    "Incorrect format!",
-                    "Use `;remind at <HH:MM> <AM/PM> on <#channel> <reminder message>`"
-                );
-                return;
-            }
-            Reminder.set(client, data);
-        });
-    } else if (command === "ping") {
-        const timeTaken = Date.now() - message.createdTimestamp;
-        message.channel.send(`Pong. Latency: ${timeTaken}ms`);
-    } else if (command === "sanin") {
-        message.channel.send("<@707528865240711188>, Oo**kko");
-    } else if (command === "events") {
+    if (command === "events") {
         if (args[0] === "show") {
             let eventString = "";
             Events.getAll(mongoose.connection, (err, docs) => {
                 if (err) {
-                    message.reply("Error getting events.");
+                    message.reply("Error getting events. Please try again.");
                     console.log("[EVENT_SHOW]\n" + err);
                     return;
                 }
@@ -107,9 +73,10 @@ client.on("message", async function (message) {
                 if (docs.length === 0) eventString = "No events to show.";
                 docs.forEach((doc) => {
                     let d = new Date(doc.date);
-                    eventString += `\n\n${count}) **${d.getDate()} ${
-                        MONTHS[d.getMonth()]
-                    }**: ${doc.event_name}`;
+                    eventString += `\n\n${count}) **${d.getDate()} ${d.toLocaleDateString(
+                        "default",
+                        { month: "short" }
+                    )}**: ${doc.event_name}`;
                     count += 1;
                 });
                 embed.setDescription(eventString);
@@ -193,28 +160,8 @@ client.on("message", async function (message) {
             embedMessage(message.channel, "Incorrect Usage!", helpString);
             return;
         }
-    } else if (command == "help") {
-        if (args.length === 0) {
-            embedMessage(
-                message.channel,
-                "Usage!",
-                require("./sevices/help").helpString
-            );
-            return;
-        } else if (args[0] === "events") {
-            embedMessage(
-                message.channel,
-                "`;events` Usage!",
-                require("./sevices/help").helpEvents
-            );
-        } else {
-            embedMessage(
-                message.channel,
-                "Incorrect Usage!",
-                "Use `;help` to list all the available commands and documentation."
-            );
-            return;
-        }
+    } else if (client.commands.has(command)) {
+        client.commands.get(command).execute(message, args);
     } else {
         embedMessage(
             message.channel,
