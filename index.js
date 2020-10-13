@@ -180,7 +180,6 @@ client.on("message", async function (message) {
             let channel = message.member.voice.channel;
             for (const [memberID, member] of channel.members) {
                 member.voice.setMute(false);
-                member.voice.setDeaf(false);
             }
             message.channel.send(
                 `All the users in \`${channel.name}\` are unmuted.`
@@ -188,6 +187,9 @@ client.on("message", async function (message) {
         } else {
             message.reply("You need to join a voice channel, first.");
         }
+    } else if (command === "dd") {
+        message.react("762906477505413130");
+        message.react("762906480122527854");
     } else {
         embedMessage(
             message.channel,
