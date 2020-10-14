@@ -1,3 +1,5 @@
+#!/app/bin/node
+
 const Discord = require("discord.js");
 const fs = require("fs");
 const { embedMessage, initSchedule } = require("./sevices/misc");
