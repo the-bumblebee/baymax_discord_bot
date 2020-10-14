@@ -162,31 +162,6 @@ client.on("message", async function (message) {
         }
     } else if (client.commands.has(command)) {
         client.commands.get(command).execute(message, args);
-    } else if (command === "mute") {
-        if (message.member.voice.channel) {
-            let channel = message.member.voice.channel;
-            for (const [memberID, member] of channel.members) {
-                member.voice.setMute(true);
-                member.voice.setDeaf(true);
-            }
-            message.channel.send(
-                `All the users in \`${channel.name}\` are muted. Use\`;unmute\` to unmute.`
-            );
-        } else {
-            message.reply("You need to join a voice channel, first.");
-        }
-    } else if (command === "unmute") {
-        if (message.member.voice.channel) {
-            let channel = message.member.voice.channel;
-            for (const [memberID, member] of channel.members) {
-                member.voice.setMute(false);
-            }
-            message.channel.send(
-                `All the users in \`${channel.name}\` are unmuted.`
-            );
-        } else {
-            message.reply("You need to join a voice channel, first.");
-        }
     } else if (command === "dd") {
         message.react("762906477505413130");
         message.react("762906480122527854");

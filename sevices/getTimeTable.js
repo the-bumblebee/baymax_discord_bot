@@ -5,8 +5,9 @@ function getTimeTable(callback) {
     let currentDate = new Date();
 
     if (currentDate.getDay() === 6 || currentDate.getDay() === 0) dayNum = 0;
-    else if (currentDate.getDay() === 5 && currentDate.getHours() > 17)
+    else if (currentDate.getDay() === 5 && currentDate.getHours() >= 17)
         dayNum = 0;
+    else if (currentDate.getHours() >= 17) dayNum = currentDate.getDay();
     else dayNum = currentDate.getDay() - 1;
 
     if (dayNum > 4) return;

@@ -36,8 +36,8 @@ function initSchedule(client) {
         });
     });
 
-    console.log("[INFO] Scheduling to send time table at 17.30 sun - thu.");
-    schedule.scheduleJob("tt-sat", "30 21 * * 0-4", () => {
+    console.log("[INFO] Scheduling to send time table at 21.30 sun - thu.");
+    schedule.scheduleJob("next-tt", "30 21 * * 0-4", () => {
         getTimeTable((day, data) => {
             client.channels.cache
                 .get("741443367111753820")
