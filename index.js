@@ -164,9 +164,8 @@ client.on("message", async function (message) {
         }
     } else if (client.commands.has(command)) {
         client.commands.get(command).execute(message, args);
-    } else if (command === "dd") {
-        message.react("762906477505413130");
-        message.react("762906480122527854");
+    } else if (command === "shaji") {
+        message.channel.send("<@460805947221213195>, Oom*ikko");
     } else {
         embedMessage(
             message.channel,
