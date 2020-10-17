@@ -19,6 +19,7 @@ module.exports = {
         Reminder.validate(args, (data, err) => {
             if (err) {
                 embedMessage = new Discord.MessageEmbed()
+                    .setColor("#0099ff")
                     .setTitle("Incorrect format!")
                     .setDescription(
                         "Use `;remind at <HH:MM> <AM/PM> on <#channel> <reminder message>`"

@@ -6,6 +6,7 @@ module.exports = {
     execute(message, args) {
         getTimeTable((day, data) => {
             embedMessage = new Discord.MessageEmbed()
+                .setColor("#0099ff")
                 .setTitle(day)
                 .setDescription(data);
             message.channel.send(embedMessage);

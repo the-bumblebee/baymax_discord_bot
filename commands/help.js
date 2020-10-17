@@ -1,21 +1,18 @@
 const { embedMessage } = require("../sevices/misc");
+const fs = require("fs");
 
 module.exports = {
     name: "help",
     execute(message, args) {
         if (!args || args.length === 0) {
-            embedMessage(
-                message.channel,
-                "Usage!",
-                require("../sevices/help").helpString
-            );
+            fs.readFile("./static/help.md", (err, data) => {
+                embedMessage(message.channel, "Usage!", data);
+            });
             return;
         } else if (args[0] === "events") {
-            embedMessage(
-                message.channel,
-                "`;events` Usage!",
-                require("../sevices/help").helpEvents
-            );
+            fs.readFile("./static/helpEvents.md", (err, data) => {
+                embedMessage(message.channel, "Usage!", data);
+            });
             return;
         } else {
             embedMessage(
