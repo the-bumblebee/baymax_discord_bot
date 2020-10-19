@@ -4,7 +4,12 @@ module.exports = {
         if (message.member.voice.channel) {
             let channel = message.member.voice.channel;
             for (const [memberID, member] of channel.members) {
-                member.voice.setMute(true);
+                // member.voice.setMute(true);
+                member.voice
+                    .setChannel(
+                        message.guild.channels.cache.get("739743435228971138")
+                    )
+                    .catch((err) => console.log(err));
             }
             // console.log(channel.members.length);
             message.channel.send(
@@ -12,11 +17,6 @@ module.exports = {
             );
 
             // let member = message.guild.members.cache.get("753555668157595698");
-            // member.voice
-            //     .setChannel(
-            //         message.guild.channels.cache.get("739743435228971138")
-            //     )
-            //     .catch((err) => console.log(err));
 
             // let channels = message.guild.channels.cache.filter((channel) => {
             //     return channel.type === "voice";
