@@ -26,7 +26,7 @@ function initSchedule(client) {
     schedule.scheduleJob("timetable", "30 6 * * 1-5", function () {
         getTimeTable((day, data) => {
             client.channels.cache
-                .get("741443367111753820")
+                .get("767969004241027072")
                 .send(
                     new Discord.MessageEmbed()
                         .setColor("#0099ff")
@@ -40,7 +40,7 @@ function initSchedule(client) {
     schedule.scheduleJob("next-tt", "30 21 * * 0-4", () => {
         getTimeTable((day, data) => {
             client.channels.cache
-                .get("741443367111753820")
+                .get("767969004241027072")
                 .send(
                     new Discord.MessageEmbed()
                         .setColor("#0099ff")
