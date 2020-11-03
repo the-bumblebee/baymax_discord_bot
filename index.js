@@ -2,9 +2,10 @@
 
 const Discord = require("discord.js");
 const fs = require("fs");
-const { embedMessage, initSchedule } = require("./sevices/misc");
-const Events = require("./sevices/Events");
+const { embedMessage, initSchedule } = require("./services/misc");
+const Events = require("./services/Events");
 const mongoose = require("mongoose");
+const { test } = require("./services/Sheets/Sheets");
 require("dotenv").config();
 
 let EVENT_ROWS = [];
@@ -59,23 +60,43 @@ client.on("message", async function (message) {
     const command = args.shift().toLowerCase();
 
     if (command === "events") {
-        let descrip =
-            "The command `;events` is deprecated as maintaining the event list is no simple task";
-        descrip +=
-            " and the event list is not reliable as there are constant changes in the calendar. ";
-        descrip +=
-            "This means one needs to constantly update the list and sometimes delete and add multiple events ";
-        descrip +=
-            "which is really a nuisance. Till some alternative is figured out, use the google doc link below.";
-        descrip +=
-            "\n\n 1. [B17 Calendar](https://docs.google.com/spreadsheets/d/1eC0piLtXm8iCKsgDKUbaUcggO43g53C4bmK5WB1CH28)";
-        descrip +=
-            "\n\n 2. [RAT Presentation Schedule - A Batch](https://docs.google.com/spreadsheets/d/1tQbs1x5GlPefQgk7rZ6pGhywWigX9xPUt4UNATMJd30/edit#gid=1588305926)";
-        const embed = new Discord.MessageEmbed()
-            .setColor("#0099ff")
-            .setTitle("Command Deprecated")
-            .setDescription(descrip);
-        message.channel.send(embed);
+        test((events) => {
+            let str = "";
+            Object.keys(events).forEach((key) => {
+                str += `**${key} November**\n`;
+                str += `${events[key]}\n`;
+            });
+            str +=
+                "\n**Disclaimer**: DO NOT RELY SOLELY ON THIS COMMAND ALONE. REFER TO THE GOOGLE SHEET LINK BELOW.";
+            str +=
+                "\n\nThis is just a prototype version of `;events` and events are directly parsed from the **B17 Calendar**. Shows the events for the next two weeks. Currently limited to just November, which means after Novermber, the command breaks. Also, any additional footer information in the Google Sheet is discarded and not shown here. Bugs are highly likely and any change in the format of the Sheet breaks the command. Always refer to the link of the calendar.";
+            str +=
+                "\n\n 1. [B17 Calendar](https://docs.google.com/spreadsheets/d/1eC0piLtXm8iCKsgDKUbaUcggO43g53C4bmK5WB1CH28)";
+            str +=
+                "\n\n 2. [RAT Presentation Schedule - A Batch](https://docs.google.com/spreadsheets/d/1tQbs1x5GlPefQgk7rZ6pGhywWigX9xPUt4UNATMJd30/edit#gid=1588305926)";
+            embedMessage(message.channel, "Schedule", str);
+        });
+
+        // EVENTS WARNING
+        // let descrip =
+        //     "The command `;events` is deprecated as maintaining the event list is no simple task";
+        // descrip +=
+        //     " and the event list is not reliable as there are constant changes in the calendar. ";
+        // descrip +=
+        //     "This means one needs to constantly update the list and sometimes delete and add multiple events ";
+        // descrip +=
+        //     "which is really a nuisance. Till some alternative is figured out, use the google doc link below.";
+        // descrip +=
+        //     "\n\n 1. [B17 Calendar](https://docs.google.com/spreadsheets/d/1eC0piLtXm8iCKsgDKUbaUcggO43g53C4bmK5WB1CH28)";
+        // descrip +=
+        //     "\n\n 2. [RAT Presentation Schedule - A Batch](https://docs.google.com/spreadsheets/d/1tQbs1x5GlPefQgk7rZ6pGhywWigX9xPUt4UNATMJd30/edit#gid=1588305926)";
+        // const embed = new Discord.MessageEmbed()
+        //     .setColor("#0099ff")
+        //     .setTitle("Command Deprecated")
+        //     .setDescription(descrip);
+        // message.channel.send(embed);
+
+        // LEGACY EVENTS
         // if (args[0] === "show") {
         //     let eventString = "";
         //     Events.getAll(mongoose.connection, (err, docs) => {

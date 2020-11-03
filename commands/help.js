@@ -1,4 +1,4 @@
-const { embedMessage } = require("../sevices/misc");
+const { embedMessage } = require("../services/misc");
 const fs = require("fs");
 
 module.exports = {

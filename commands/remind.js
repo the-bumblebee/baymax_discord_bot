@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const Reminder = require("../sevices/Reminder");
+const Reminder = require("../services/Reminder");
 
 module.exports = {
     name: "remind",

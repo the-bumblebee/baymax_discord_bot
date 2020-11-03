@@ -1,5 +1,5 @@
 const Discord = require("discord.js");
-const getTimeTable = require("../sevices/getTimeTable");
+const getTimeTable = require("../services/getTimeTable");
 
 module.exports = {
     name: "tt",
