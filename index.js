@@ -78,21 +78,22 @@ client.on("message", async function (message) {
         // });
 
         // EVENTS WARNING
+        // let descrip =
+        //     "The command `;events` is deprecated as maintaining the event list is no simple task";
+        // descrip +=
+        //     " and the event list is not reliable as there are constant changes in the calendar. ";
+        // descrip +=
+        //     "This means one needs to constantly update the list and sometimes delete and add multiple events ";
+        // descrip +=
+        //     "which is really a nuisance. Till some alternative is figured out, use the google doc link below.";
         let descrip =
-            "The command `;events` is deprecated as maintaining the event list is no simple task";
-        descrip +=
-            " and the event list is not reliable as there are constant changes in the calendar. ";
-        descrip +=
-            "This means one needs to constantly update the list and sometimes delete and add multiple events ";
-        descrip +=
-            "which is really a nuisance. Till some alternative is figured out, use the google doc link below.";
-        descrip +=
-            "\n\n 1. [B17 Calendar](https://docs.google.com/spreadsheets/d/1eC0piLtXm8iCKsgDKUbaUcggO43g53C4bmK5WB1CH28)";
+            "1. [B17 Calendar](https://docs.google.com/spreadsheets/d/1eC0piLtXm8iCKsgDKUbaUcggO43g53C4bmK5WB1CH28)";
         descrip +=
             "\n\n 2. [RAT Presentation Schedule - A Batch](https://docs.google.com/spreadsheets/d/1tQbs1x5GlPefQgk7rZ6pGhywWigX9xPUt4UNATMJd30/edit#gid=1588305926)";
         const embed = new Discord.MessageEmbed()
             .setColor("#0099ff")
-            .setTitle("Command Deprecated")
+            // .setTitle("Command Deprecated")
+            .setTitle("Events")
             .setDescription(descrip);
         message.channel.send(embed);
 
