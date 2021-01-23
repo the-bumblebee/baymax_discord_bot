@@ -5,6 +5,12 @@ const Discord = require("discord.js");
 module.exports = {
     name: "tt",
     async execute(message, args) {
+        if (!message.guild || message.guild.id !== "698456806787383327") {
+            message.reply(
+                "Sorry! This command is not open to other servers and private chats as of now."
+            );
+            return;
+        }
         const subcmd = args.shift();
         if (subcmd === "add") {
             await addCourse(message, args);
@@ -16,6 +22,14 @@ module.exports = {
             await dropSchema(message, args);
         } else if (!subcmd) {
             await getTimeTable(message, args);
+        } else {
+            const errorMessage = new Discord.MessageEmbed()
+                .setColor("#0099ff")
+                .setTitle("Incorrect Usage!")
+                .setDescription(
+                    "Use `;help tt` to see usage of `;tt` command."
+                );
+            message.send(errorMessage);
         }
     },
 };
@@ -29,7 +43,7 @@ async function addCourse(message, args) {
         const errorMessage = new Discord.MessageEmbed()
             .setColor("#0099ff")
             .setTitle("Incorrect format!")
-            .setDescription("Blah");
+            .setDescription("Use `;help tt` to see usage of `;tt` command.");
         message.reply(errorMessage);
         return;
     }
@@ -93,7 +107,7 @@ async function deleteCourse(message, args) {
     }
 
     message.channel.send(
-        `Reply with "yes" to confirm deletion of the course "${courses[serialNumber].course_name}".`
+        `Reply with the name of the course to confirm deletion.`
     );
     try {
         const collected = await message.channel.awaitMessages(filter, {
@@ -101,8 +115,9 @@ async function deleteCourse(message, args) {
             time: 12000,
             errors: ["time"],
         });
-        if (collected.first().content.toLowerCase() !== "yes") {
+        if (collected.first().content !== courses[serialNumber].course_name) {
             message.channel.send("Could not confirm! Exiting!");
+            return;
         }
     } catch (error) {
         message.channel.send("Command timed out! Run command again.");
@@ -122,17 +137,6 @@ async function deleteCourse(message, args) {
     message.channel.send(
         `Course "${courses[serialNumber].course_name}" and its role deleted successfully.`
     );
-
-    // const collector = message.channel.createMessageCollector(filter, {
-    //     time: 5000,
-    // });
-
-    // collector.on("collect", (m) => {
-    //     console.log(m.content);
-    // });
-    // collector.on("end", (collected) => {
-    //     console.log("done");
-    // });
 }
 
 async function getCourseTimings(message, args) {
@@ -194,6 +198,8 @@ async function getTimeTable(message, args) {
     }
     const schedule = await TimeTable.get(days[dayNumber]);
     let descr = await TimeTable.dailyHrsToMessage(schedule);
+    descr +=
+        "\n**Note:** To add or delete courses and for other commands type `;help tt`.";
     let infoMessage = new Discord.MessageEmbed()
         .setColor("#0099ff")
         .setTitle(`Timetable - ${day}`)
@@ -202,10 +208,15 @@ async function getTimeTable(message, args) {
 }
 
 async function dropSchema(message, args) {
+    // drop Courses collection
+    // drop TimeTable collection
+    // remove all roles
+
     if (message.author.id !== "490390568623669251") {
         message.reply("nope!");
         return;
     }
+
     try {
         await Courses.removeAllRoles(message);
         await Courses.dropTable();
