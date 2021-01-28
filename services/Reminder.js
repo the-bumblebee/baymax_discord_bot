@@ -2,6 +2,23 @@ const timeParser = require("./timeParser");
 const Discord = require("discord.js");
 const schedule = require("node-schedule");
 
+async function parse(argString) {
+    const eventExpr = /"([^"]+)"/g;
+    const timeExpr = /at ([01]?[0-9]|2[0-3]).([0-5][0-9])/g;
+    const dayExpr = /on ([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{2})/g;
+    const channelExpr = /to #([^ \n]+)/g;
+
+    const eventMatch = eventExpr.exec(argString);
+    const timeMatch = timeExpr.exec(argString);
+    const dayMatch = dayExpr.exec(argString);
+    const channelMatch = channelExpr.exec(argString);
+
+    console.log(eventMatch[1]);
+    console.log(timeMatch[1], timeMatch[2]);
+    console.log(dayMatch[1], dayMatch[2], dayMatch[3]);
+    console.log(channelMatch[1]);
+}
+
 function validate(args, callback) {
     if (!args || args.length < 6 || args[0] !== "at" || args[3] !== "on") {
         callback(null, "Incorrect format");
@@ -42,4 +59,4 @@ function set(client, data) {
     });
 }
 
-module.exports = { validate, set };
+module.exports = { validate, set, parse };

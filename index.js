@@ -6,6 +6,8 @@ const { embedMessage, initSchedule } = require("./services/misc");
 const Events = require("./services/Events");
 const mongoose = require("mongoose");
 const Courses = require("./services/Courses");
+const TimeTable = require("./services/TimeTable");
+const schedule = require("node-schedule");
 require("dotenv").config();
 
 let EVENT_ROWS = [];
@@ -48,6 +50,46 @@ mongoose.connection.on("error", function () {
     client.channels.cache
         .get("739440153243942933")
         .send("<@490390568623669251>, Can't connect to MongoDB.");
+});
+
+mongoose.connection.on("open", async function () {
+    // Reminding
+    const days = ["mon", "tue", "wed", "thu", "fri"];
+    const today = new Date();
+    let dayNumber = today.getDay() - 1;
+    if (dayNumber > 4 || dayNumber < 0) {
+        dayNumber = 0;
+    }
+    const lectureTimings = await TimeTable.get(days[dayNumber]);
+    const timeExpr = /([01]?[0-9]|2[0-3])[.]([0-5][0-9])/g;
+    for (const timeStr of Object.keys(lectureTimings)) {
+        const timeMatch = timeExpr.exec(timeStr);
+        const time = {
+            hr: parseInt(timeMatch[1]),
+            min: parseInt(timeMatch[2]),
+        };
+        schedule.scheduleJob(
+            timeStr,
+            `${time.min} ${time.hr} * * *`,
+            async function () {
+                let infoMessage = "Class now, ";
+                for (const course of lectureTimings[timeStr]) {
+                    const role = await message.guild.roles.cache.find(
+                        (role) => role.name === course
+                    );
+                    if (!course) {
+                        infoMessage += `${course}, `;
+                    } else {
+                        infoMessage += `<@&${role.id}>`;
+                    }
+                }
+                client.channels.cache
+                    .get("767969004241027072")
+                    .send(infoMessage);
+                schedule.scheduledJobs[timeStr].cancel();
+            }
+        );
+    }
 });
 
 client.on("message", async function (message) {
