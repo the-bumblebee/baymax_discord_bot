@@ -73,17 +73,20 @@ mongoose.connection.on("open", async function () {
             `${time.min} ${time.hr} * * *`,
             async function () {
                 let infoMessage = "Class now, ";
+                const guild = await client.guilds.cache.get(
+                    "698456806787383327"
+                );
                 for (const course of lectureTimings[timeStr]) {
-                    const role = await message.guild.roles.cache.find(
+                    const role = await guild.roles.cache.find(
                         (role) => role.name === course
                     );
                     if (!course) {
                         infoMessage += `${course}, `;
                     } else {
-                        infoMessage += `<@&${role.id}>`;
+                        infoMessage += `<@&${role.id}>, `;
                     }
                 }
-                client.channels.cache
+                guild.channels.cache
                     .get("767969004241027072")
                     .send(infoMessage);
                 schedule.scheduledJobs[timeStr].cancel();
