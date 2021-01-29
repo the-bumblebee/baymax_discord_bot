@@ -1,6 +1,5 @@
 const Discord = require("discord.js");
 const schedule = require("node-schedule");
-const getTimeTable = require("./getTimeTable");
 const TimeTable = require("../services/TimeTable");
 
 function embedMessage(channel, title, text) {
@@ -31,6 +30,47 @@ async function initSchedule(client) {
             .setTitle(`Timetable - ${day}`)
             .setDescription(descr);
         client.channels.cache.get("767969004241027072").send(infoMessage);
+
+        // Reminding
+        // const days = ["mon", "tue", "wed", "thu", "fri"];
+        // const today = new Date();
+        // let dayNumber = today.getDay() - 1;
+        // if (dayNumber > 4 || dayNumber < 0) {
+        //     dayNumber = 0;
+        // }
+        // const lectureTimings = await TimeTable.get(days[dayNumber]);
+        // const timeExpr = /([01]?[0-9]|2[0-3])[.]([0-5][0-9])/g;
+        // for (const timeStr of Object.keys(lectureTimings)) {
+        //     const timeMatch = timeExpr.exec(timeStr);
+        //     const time = {
+        //         hr: parseInt(timeMatch[1]),
+        //         min: parseInt(timeMatch[2]),
+        //     };
+        //     schedule.scheduleJob(
+        //         timeStr,
+        //         `${time.min} ${time.hr} * * *`,
+        //         async function () {
+        //             let infoMessage = "Class now, ";
+        //             const guild = await client.guilds.cache.get(
+        //                 "698456806787383327"
+        //             );
+        //             for (const course of lectureTimings[timeStr]) {
+        //                 const role = await guild.roles.cache.find(
+        //                     (role) => role.name === course
+        //                 );
+        //                 if (!course) {
+        //                     infoMessage += `${course}, `;
+        //                 } else {
+        //                     infoMessage += `<@&${role.id}>, `;
+        //                 }
+        //             }
+        //             guild.channels.cache
+        //                 .get("767969004241027072")
+        //                 .send(infoMessage);
+        //             schedule.scheduledJobs[timeStr].cancel();
+        //         }
+        //     );
+        // }
     });
 }
 

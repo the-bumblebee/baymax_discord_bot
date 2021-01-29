@@ -14,6 +14,7 @@ async function dropTable() {
 }
 
 async function parseTimings(argString) {
+    // Throw error if incorrect format for timings
     const slotExpr = /(^|,[ ]?)([A-H][@+]?)/g;
     const dayExpr = /(mon|tue|wed|thu|fri)({([ ,]?[ ,]*([01]?[0-9]|2[0-3]).([0-5][0-9]))+})/g;
     const timeExpr = /([01]?[0-9]|2[0-3])[.]([0-5][0-9])/g;
