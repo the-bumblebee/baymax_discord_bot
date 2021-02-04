@@ -23,8 +23,8 @@ async function initSchedule(client) {
             dayNumber = 0;
             day = "Monday";
         }
-        const schedule = await TimeTable.get(days[dayNumber]);
-        let descr = await TimeTable.dailyHrsToMessage(schedule);
+        const timings = await TimeTable.get(days[dayNumber]);
+        let descr = await TimeTable.dailyHrsToMessage(timings);
         descr +=
             "\n**Note:** To add or delete courses and for other commands type `;help tt`.";
         let infoMessage = new Discord.MessageEmbed()
