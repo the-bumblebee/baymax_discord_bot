@@ -4,7 +4,7 @@ const fs = require("fs");
 module.exports = {
     name: "tut",
     execute(message, args) {
-        const commands = ["tut-add", "tut-delete", "tut-get"];
+        const commands = ["tt-add", "tt-delete", "tt-get"];
         if (!args || args.length === 0) {
             fs.readFile("./static/tut/main.md", (err, data) => {
                 embedMessage(message.channel, "Usage!", data);
