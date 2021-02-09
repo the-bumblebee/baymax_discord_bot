@@ -9,6 +9,11 @@ const TimeTable = require("./services/TimeTable");
 const schedule = require("node-schedule");
 require("dotenv").config();
 
+const PREFIX = process.env.PREFIX;
+
+const client = new Discord.Client();
+client.commands = new Discord.Collection();
+
 mongoose.connect(
     process.env.DB_STRING,
     {
@@ -22,13 +27,9 @@ mongoose.connect(
             return;
         }
         console.log("[INFO] Connected to DB");
+        initSchedule(client);
     }
 );
-
-const PREFIX = process.env.PREFIX;
-
-const client = new Discord.Client();
-client.commands = new Discord.Collection();
 
 const commandFiles = fs
     .readdirSync("./commands")
@@ -39,9 +40,9 @@ for (const file of commandFiles) {
     client.commands.set(command.name, command);
 }
 
-client.once("ready", () => {
-    initSchedule(client);
-});
+// client.once("ready", () => {
+//     initSchedule(client);
+// });
 
 mongoose.connection.on("error", function () {
     client.channels.cache

@@ -41,7 +41,10 @@ async function initSchedule(client) {
         const lectureTimings = await TimeTable.get(days[dayNumber]);
         const timeExpr = /([01]?[0-9]|2[0-3])[.]([0-5][0-9])/g;
         for (const timeStr of Object.keys(lectureTimings)) {
+            timeExpr.lastIndex = 0;
             const timeMatch = timeExpr.exec(timeStr);
+            console.log(timeStr);
+            console.log(timeMatch);
             const time = {
                 hr: parseInt(timeMatch[1]),
                 min: parseInt(timeMatch[2]),
