@@ -1,4 +1,5 @@
 const Event = require("../models/Event");
+const mongoose = require("mongoose");
 
 function isConnected(connection) {
     if (connection.readyState !== 1) return false;
@@ -6,7 +7,7 @@ function isConnected(connection) {
 }
 
 async function dropTable() {
-    if (!isConnected(connection)) {
+    if (!isConnected(mongoose.connection)) {
         throw new Error("[ERROR] Database is not connected.");
     }
     await mongoose.connection.db.dropCollection("Events");

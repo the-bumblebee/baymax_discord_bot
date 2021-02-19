@@ -1,26 +1,70 @@
+const mongoose = require("mongoose");
+const Discord = require("discord.js");
 const Events = require("../services/Events");
 
 // module.exports = {
-//     name: "events",
-//     async execute(message, args) {
-//         const subcmd = args.shift();
-//         if (subcmd === "show") {
-//             await showEvents(message, args);
-//         } else if (subcmd === "delete") {
-//             await deleteEvent(message, args);
-//         } else if (subcmd === "add") {
-//             await addEvent(message, args)
-//         } else {
-//             const errorMessage = new Discord.MessageEmbed()
-//                 .setColor("#0099ff")
-//                 .setTitle("Incorrect Usage!")
-//                 .setDescription(
-//                     "Use `;help events` to see usage of `;events` command."
-//                 );
-//             message.send(errorMessage);
-//         }
-//     }
-// }
+const c = {
+    name: "events",
+    async execute(message, args) {
+        const subcmd = args.shift();
+        if (subcmd === "show") {
+            await showEvents(message, args);
+        } else if (subcmd === "add") {
+            await addEvent(message, args);
+            // } else if (subcmd === "delete") {
+            //     await deleteEvent(message, args);
+        } else {
+            const errorMessage = new Discord.MessageEmbed()
+                .setColor("#0099ff")
+                .setTitle("Incorrect Usage!")
+                .setDescription(
+                    "Use `;help events` to see usage of `;events` command."
+                );
+            message.send(errorMessage);
+        }
+    },
+};
+
+async function showEvents(message, args) {
+    try {
+        const docs = await Events.getAll(mongoose.connection);
+        const infoMessage = new Discord.MessageEmbed()
+            .setColor("#0099ff")
+            .setTitle("Upcoming Events");
+        let descr = "";
+        if (!docs || docs.length === 0) descr += "No events to show.";
+        for (const doc of docs) {
+            const date = new Date(doc.date);
+            descr += `\n\n${count}) **${date.getDate()} ${date.toLocaleDateString(
+                "default",
+                { month: "short" }
+            )}**: ${doc.event_name}`;
+        }
+        infoMessage.setDescription(descr);
+        message.channel.send(infoMessage);
+    } catch (error) {
+        console.log("[ERROR]", error);
+        return;
+    }
+}
+
+async function addEvent(message, args) {
+    argString = args.join(" ");
+    try {
+        const event = await Events.parse(argString);
+        await Events.add(event);
+        message.reply("Event added successfully.");
+    } catch (error) {
+        console.log("[ERROR]", error);
+        const errorMessage = new Discord.MessageEmbed()
+            .setColor("#0099ff")
+            .setTitle("Incorrect format!")
+            .setDescription(
+                "Use `;help events` to see usage of `;events` command."
+            );
+        message.send(errorMessage);
+    }
+}
 
 // if (command === "events") {
 //     if (args[0] === "show") {

@@ -43,8 +43,6 @@ async function initSchedule(client) {
         for (const timeStr of Object.keys(lectureTimings)) {
             timeExpr.lastIndex = 0;
             const timeMatch = timeExpr.exec(timeStr);
-            console.log(timeStr);
-            console.log(timeMatch);
             const time = {
                 hr: parseInt(timeMatch[1]),
                 min: parseInt(timeMatch[2]),
