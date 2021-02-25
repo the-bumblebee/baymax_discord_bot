@@ -115,11 +115,12 @@ async function addReminder(message, argString) {
     await addEntry(reminderObj);
 
     schedule.scheduleJob(jobID, date, async function () {
-        const remindMessage = new Discord.MessageEmbed()
-            .setColor("#0099ff")
-            .setTitle("Reminder")
-            .setDescription(reminder.message);
-        channel.send(remindMessage);
+        // const remindMessage = new Discord.MessageEmbed()
+        //     .setColor("#0099ff")
+        //     .setTitle("Reminder")
+        //     .setDescription(reminder.message);
+        // channel.send(remindMessage);
+        channel.send(`**Reminder:** ${reminder.message}`);
         await deleteEntry(reminderObj);
     });
 

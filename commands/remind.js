@@ -29,8 +29,6 @@ module.exports = {
                     { name: "Channel", value: `<#${reminderObj.channel}>` }
                 );
             message.channel.send(infoMessage);
-            const s = await Reminder.getAll();
-            console.log(s);
         } catch (error) {
             console.log(error);
             message.reply("Couldn't add reminder!");
