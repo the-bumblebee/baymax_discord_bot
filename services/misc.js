@@ -47,11 +47,18 @@ async function initSchedule(client) {
                 hr: parseInt(timeMatch[1]),
                 min: parseInt(timeMatch[2]),
             };
+            // Fires at 6.30, so if anything before this time
+            // it gets scheduled to send on the same day, but
+            // setHours may give undesired result. TODO
+            const date = new Date();
+            // Reminds 15 minutes before
+            dayNumber.setHours(time.hr, time.min - 15, 0);
             schedule.scheduleJob(
                 timeStr,
-                `${time.min} ${time.hr} * * ${dayNumber + 1}`,
+                //`${time.min} ${time.hr} * * ${dayNumber + 1}`,
+                date,
                 async function () {
-                    let infoMessage = "Class now, ";
+                    let infoMessage = "Class in 15 min, ";
                     const guild = await client.guilds.cache.get(
                         "698456806787383327"
                     );
