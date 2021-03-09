@@ -52,7 +52,7 @@ async function initSchedule(client) {
             // setHours may give undesired result. TODO
             const date = new Date();
             // Reminds 15 minutes before
-            dayNumber.setHours(time.hr, time.min - 15, 0);
+            date.setHours(time.hr, time.min - 15, 0);
             schedule.scheduleJob(
                 timeStr,
                 //`${time.min} ${time.hr} * * ${dayNumber + 1}`,
